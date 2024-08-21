@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Fleet = require('../models/fleet');
+const Truck = require('../models/truck');
 
 // Create a fleet
 router.post('/', async (req, res) => {
@@ -16,7 +17,7 @@ router.post('/', async (req, res) => {
 // Read all fleets
 router.get('/', async (req, res) => {
   try {
-    const fleets = await Fleet.find();
+    const fleets = await Fleet.find().populate('trucks');
     res.json(fleets);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -26,7 +27,7 @@ router.get('/', async (req, res) => {
 // Read a single fleet
 router.get('/:id', async (req, res) => {
   try {
-    const fleet = await Fleet.findById(req.params.id);
+    const fleet = await Fleet.findById(req.params.id).populate('trucks');
     if (!fleet) return res.status(404).json({ message: 'Fleet not found' });
     res.json(fleet);
   } catch (err) {
