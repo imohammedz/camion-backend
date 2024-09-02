@@ -2,9 +2,10 @@ const express = require('express');
 const router = express.Router();
 const Fleet = require('../models/fleet');
 const Truck = require('../models/truck');
+const auth = require('../middleware/auth');
 
 // Create a fleet
-router.post('/', async (req, res) => {
+router.post('/', auth, async (req, res) => {
   try {
     const newFleet = new Fleet(req.body);
     const fleet = await newFleet.save();
@@ -15,7 +16,7 @@ router.post('/', async (req, res) => {
 });
 
 // Read all fleets
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
   try {
     const fleets = await Fleet.find().populate('trucks');
     res.json(fleets);
@@ -25,7 +26,7 @@ router.get('/', async (req, res) => {
 });
 
 // Read a single fleet
-router.get('/:id', async (req, res) => {
+router.get('/:id', auth, async (req, res) => {
   try {
     const fleet = await Fleet.findById(req.params.id).populate('trucks');
     if (!fleet) return res.status(404).json({ message: 'Fleet not found' });
@@ -36,7 +37,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Update a fleet
-router.put('/:id', async (req, res) => {
+router.put('/:id', auth, async (req, res) => {
   try {
     const fleet = await Fleet.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!fleet) return res.status(404).json({ message: 'Fleet not found' });
@@ -47,7 +48,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // Delete a fleet
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', auth, async (req, res) => {
   try {
     const fleet = await Fleet.findByIdAndDelete(req.params.id);
     if (!fleet) return res.status(404).json({ message: 'Fleet not found' });
