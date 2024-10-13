@@ -6,12 +6,10 @@ const FleetSchema = new mongoose.Schema({
   total_trucks: { type: Number, default: 0 },
   fleet_manager: { type: String, required: true },
   fleet_base_location: { type: String },
-  average_age_of_fleet: { type: Number, default: 0 },
   total_capacity: { type: Number, default: 0 },
   total_mileage: { type: Number, default: 0 },
   fleet_image_url: { type: String },
   operational_status: { type: String, enum: ['fully operational', 'partially operational', 'under maintenance'], default: 'fully operational' },
-  service_records: { type: String },
   createdAt: { type: Date, default: Date.now },
 });
 
