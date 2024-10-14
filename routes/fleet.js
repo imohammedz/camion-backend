@@ -58,4 +58,26 @@ router.delete('/:id', auth, async (req, res) => {
   }
 });
 
+// Get trucks by fleet ID
+router.get('/:fleetId/trucks', async (req, res) => {
+  try {
+    const fleet = await Fleet.findById(req.params.fleetId).populate('trucks'); // Assuming you have a virtual reference to trucks
+    
+    // Check if the fleet exists and if it has any trucks
+    if (!fleet) {
+      return res.status(404).json({ message: 'Fleet not found' });
+    }
+
+       // If there are no trucks, return null or an empty array
+       if (!fleet.trucks || fleet.trucks.length === 0) {
+        return res.json([]);  // Change this to 'null' if you prefer that as the response
+      }
+    
+    res.json(fleet.trucks);
+  } catch (error) {
+    console.error('Error fetching trucks:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
 module.exports = router;
