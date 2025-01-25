@@ -3,6 +3,8 @@ const router = express.Router();
 const Truck = require('../models/truck');
 const auth = require('../middleware/auth');
 
+router.use(express.json()); // says that we have to accept json format data.
+
 // Create a truck
 router.post('/', auth, async (req, res) => {
   try {

@@ -4,6 +4,8 @@ const Fleet = require('../models/fleet');
 const Truck = require('../models/truck');
 const auth = require('../middleware/auth');
 
+router.use(express.json()); // says that we have to accept json format data.
+
 // Create a fleet
 router.post('/', auth, async (req, res) => {
   try {
