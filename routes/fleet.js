@@ -8,35 +8,27 @@ const mongoose = require('mongoose');
 
 // Create a fleet
 router.post('/', auth(['DEFAULT_USER']), async (req, res) => {
-  const session = await mongoose.startSession(); // ✅ Start a session
-  session.startTransaction(); // ✅ Begin transaction
-
   try {
-    // ✅ Ensure fleet creation is within the transaction
+    // Create a new fleet without using transactions
     const newFleet = new Fleet(req.body);
-    const fleet = await newFleet.save({ session });
+    const fleet = await newFleet.save();
 
-    // ✅ Fetch the user within the transaction
-    const user = await User.findById(req.user.id).session(session);
+    // Fetch the user
+    const user = await User.findById(req.user.id);
     if (!user) {
-      throw new Error('User not found'); // ❌ Don't return early; let catch handle rollback
+      throw new Error('User not found');
     }
 
-    // ✅ If the user is not already a FLEET_OWNER, update their role
+    // If the user is not already a FLEET_OWNER, update their role
     if (user.role !== 'FLEET_OWNER') {
       user.role = 'FLEET_OWNER';
-      await user.save({ session });
+      await user.save();
     }
 
-    await session.commitTransaction(); // ✅ Commit the transaction if everything is successful
-    session.endSession(); // ✅ End the session to free resources
-
-    res.status(201).json(fleet); // ✅ Send response after committing
+    // Send response after successful creation
+    res.status(201).json(fleet);
 
   } catch (err) {
-    await session.abortTransaction(); // ❌ Rollback transaction if there's an error
-    session.endSession(); // ✅ Always close session
-
     console.error(err.message);
     res.status(500).json({ error: err.message });
   }
