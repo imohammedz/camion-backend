@@ -35,6 +35,8 @@ app.use('/api/user', userRoutes);  // Use user routes (protected)
 app.use('/api/fleets', fleetRoutes);
 app.use('/api/trucks', truckRoutes);
 
+app.use(express.json()); // Ensure request body is parsed
+
 // Global error handling middleware (optional, for debugging)
 app.use((err, req, res, next) => {
   console.error(err.stack);
