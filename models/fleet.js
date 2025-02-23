@@ -3,13 +3,10 @@ const mongoose = require('mongoose');
 // Fleet Schema
 const FleetSchema = new mongoose.Schema({
   fleet_name: { type: String, required: true },
-  total_trucks: { type: Number, default: 0 },
-  fleet_manager: { type: String, required: true },
   fleet_base_location: { type: String },
-  max_capacity: { type: Number, default: 0 },
-  fleet_image_url: { type: String },
-  operational_status: { type: String, enum: ['fully operational', 'partially operational', 'under maintenance'], default: 'fully operational' },
-  createdAt: { type: Date, default: Date.now },
+  //ON_HOLD is something created newly and no trucks added TODO : try to come up with a better name
+  operational_status: { type: String, enum: ['fully operational', 'partially operational', 'under maintenance', 'ON_HOLD'], default: 'fully operational' },
+  createdAt: { type: Date, default: Date.now }
 });
 
 // Virtual for referencing trucks in the fleet
