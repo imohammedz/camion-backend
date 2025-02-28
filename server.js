@@ -1,5 +1,5 @@
 const express = require('express');
-const mongoose = require('mongoose');
+const { PrismaClient } = require('@prisma/client');  // Import Prisma Client
 const dotenv = require('dotenv');
 const cors = require('cors'); // Import the cors package
 
@@ -15,10 +15,8 @@ const app = express();
 // Middleware to parse JSON
 app.use(express.json());
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('MongoDB connected'))
-  .catch((err) => console.log(err));
+// Initialize Prisma Client
+const prisma = new PrismaClient();
 
 const port = process.env.PORT || 5000;
 

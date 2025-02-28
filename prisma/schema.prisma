@@ -1,0 +1,51 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int     @id @default(autoincrement())  
+  name        String  
+  email       String  @unique
+  phoneNumber String  @unique
+  password    String  
+  role        String  @default("DEFAULT_USER")
+}
+
+model Fleet {
+  id                 String   @id @default(uuid()) // Primary key (UUID for scalability)
+  fleet_name         String
+  fleet_base_location String?
+  operational_status String   @default("fully operational") // Enum replacement
+  createdAt          DateTime @default(now())
+
+  // Relation to Truck model (assuming a fleet can have multiple trucks)
+  trucks             Truck[]
+}
+
+model Truck {
+  id                   String   @id @default(uuid())
+  truck_model           String
+  registration_number  String   @unique
+  manufacturer         String
+  year_of_manufacture  Int
+  capacity            Int
+  dimensions          String?
+  fuel_type           String
+  mileage             Int?
+  status              String   @default("available")
+
+  // ✅ Foreign key relation to Fleet
+  fleet_id            String
+  fleet               Fleet   @relation(fields: [fleet_id], references: [id])
+}

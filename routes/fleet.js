@@ -1,32 +1,33 @@
 const express = require('express');
 const router = express.Router();
-const Fleet = require('../models/fleet');
-const Truck = require('../models/truck');
+const { PrismaClient } = require('@prisma/client');  // Import Prisma Client
 const auth = require('../middleware/auth');
-const User = require('../models/user');
-const mongoose = require('mongoose');
+const prisma = new PrismaClient(); // Initialize Prisma client
 
 // Create a fleet
 router.post('/', auth(['DEFAULT_USER']), async (req, res) => {
   try {
     // Create a new fleet without using transactions
-    const newFleet = new Fleet(req.body);
-    const fleet = await newFleet.save();
+    const newFleet = await prisma.fleet.create({
+      data: req.body,
+    });
 
-    // Fetch the user
-    const user = await User.findById(req.user.id);
+    // Assuming you have a 'userId' in the request (provided via middleware or token)
+    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
     if (!user) {
       throw new Error('User not found');
     }
 
     // If the user is not already a FLEET_OWNER, update their role
     if (user.role !== 'FLEET_OWNER') {
-      user.role = 'FLEET_OWNER';
-      await user.save();
+      await prisma.user.update({
+        where: { id: req.user.id },
+        data: { role: 'FLEET_OWNER' },
+      });
     }
 
     // Send response after successful creation
-    res.status(201).json(fleet);
+    res.status(201).json(newFleet);
 
   } catch (err) {
     console.error(err.message);
@@ -37,15 +38,11 @@ router.post('/', auth(['DEFAULT_USER']), async (req, res) => {
 // Read all fleets
 router.get('/', auth(['DEFAULT_USER', 'FLEET_OWNER']), async (req, res) => {
   try {
-
-    const token = req.header('Authorization');
-
-    if (!token) {
-      console.log('❌ No token provided!');
-      return res.status(401).json({ msg: 'No token, authorization denied' });
-    }
-
-    const fleets = await Fleet.find().populate('trucks');
+    const fleets = await prisma.fleet.findMany({
+      include: {
+        trucks: true,  // Include related trucks in the fleet
+      },
+    });
     res.json(fleets);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -55,7 +52,10 @@ router.get('/', auth(['DEFAULT_USER', 'FLEET_OWNER']), async (req, res) => {
 // Read a single fleet
 router.get('/:id', auth(['DEFAULT_USER', 'FLEET_OWNER']), async (req, res) => {
   try {
-    const fleet = await Fleet.findById(req.params.id).populate('trucks');
+    const fleet = await prisma.fleet.findUnique({
+      where: { id: Number(req.params.id) },  // Prisma requires the ID to be a number
+      include: { trucks: true },  // Include related trucks in the fleet
+    });
     if (!fleet) return res.status(404).json({ message: 'Fleet not found' });
     res.json(fleet);
   } catch (err) {
@@ -66,8 +66,10 @@ router.get('/:id', auth(['DEFAULT_USER', 'FLEET_OWNER']), async (req, res) => {
 // Update a fleet
 router.put('/:id', auth(['DEFAULT_USER', 'FLEET_OWNER']), async (req, res) => {
   try {
-    const fleet = await Fleet.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!fleet) return res.status(404).json({ message: 'Fleet not found' });
+    const fleet = await prisma.fleet.update({
+      where: { id: Number(req.params.id) },
+      data: req.body,
+    });
     res.json(fleet);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -77,8 +79,7 @@ router.put('/:id', auth(['DEFAULT_USER', 'FLEET_OWNER']), async (req, res) => {
 // Delete a fleet
 router.delete('/:id', auth(['FLEET_OWNER']), async (req, res) => {
   try {
-    const fleet = await Fleet.findByIdAndDelete(req.params.id);
-    if (!fleet) return res.status(404).json({ message: 'Fleet not found' });
+    await prisma.fleet.delete({ where: { id: Number(req.params.id) } });
     res.json({ message: 'Fleet deleted' });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -88,18 +89,20 @@ router.delete('/:id', auth(['FLEET_OWNER']), async (req, res) => {
 // Get trucks by fleet ID
 router.get('/:fleetId/trucks', auth(['FLEET_OWNER']), async (req, res) => {
   try {
-    const fleet = await Fleet.findById(req.params.fleetId).populate('trucks'); // Assuming you have a virtual reference to trucks
-    
-    // Check if the fleet exists and if it has any trucks
+    const fleet = await prisma.fleet.findUnique({
+      where: { id: Number(req.params.fleetId) },
+      include: { trucks: true },
+    });
+
     if (!fleet) {
       return res.status(404).json({ message: 'Fleet not found' });
     }
 
-       // If there are no trucks, return null or an empty array
-       if (!fleet.trucks || fleet.trucks.length === 0) {
-        return res.json([]);  // Change this to 'null' if you prefer that as the response
-      }
-    
+    // If there are no trucks, return an empty array
+    if (!fleet.trucks || fleet.trucks.length === 0) {
+      return res.json([]);  // Change this to 'null' if you prefer that as the response
+    }
+
     res.json(fleet.trucks);
   } catch (error) {
     console.error('Error fetching trucks:', error);
