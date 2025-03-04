@@ -6,7 +6,7 @@ const auth = require('../middleware/auth');
 const prisma = new PrismaClient();
 
 // Create a truck
-router.post('/', auth, async (req, res) => {
+router.post('/', auth(['FLEET_OWNER']), async (req, res) => {
   try {
     const truck = await prisma.truck.create({
       data: req.body, // Directly using req.body instead of DTO
@@ -20,7 +20,7 @@ router.post('/', auth, async (req, res) => {
 });
 
 // Read all trucks
-router.get('/', auth, async (req, res) => {
+router.get('/', auth(['FLEET_OWNER']), async (req, res) => {
   try {
     const trucks = await prisma.truck.findMany({
       include: { fleet: true }, // Populate fleet details
@@ -34,7 +34,7 @@ router.get('/', auth, async (req, res) => {
 });
 
 // Read a single truck
-router.get('/:id', auth, async (req, res) => {
+router.get('/:id', auth(['FLEET_OWNER']), async (req, res) => {
   try {
     const truck = await prisma.truck.findUnique({
       where: { id: req.params.id },
@@ -50,7 +50,7 @@ router.get('/:id', auth, async (req, res) => {
 });
 
 // Update a truck
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', auth(['FLEET_OWNER']), async (req, res) => {
   try {
     const truck = await prisma.truck.update({
       where: { id: req.params.id },
@@ -65,7 +65,7 @@ router.put('/:id', auth, async (req, res) => {
 });
 
 // Delete a truck
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', auth(['FLEET_OWNER']), async (req, res) => {
   try {
     await prisma.truck.delete({ where: { id: req.params.id } });
 

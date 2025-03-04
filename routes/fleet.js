@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');  // Import Prisma Client
 const auth = require('../middleware/auth');
+const jwt = require('jsonwebtoken');
 const prisma = new PrismaClient(); // Initialize Prisma client
 
 // Create a fleet
@@ -26,8 +27,15 @@ router.post('/', auth(['DEFAULT_USER']), async (req, res) => {
       });
     }
 
-    // Send response after successful creation
-    res.status(201).json(newFleet);
+     // Generate a new JWT token with the updated role
+     const newToken = jwt.sign(
+      { user: { id: req.user.id, role: 'FLEET_OWNER' } },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    // Send the new token along with the fleet creation response
+    res.status(201).json({ fleet: newFleet, token: newToken });
 
   } catch (err) {
     console.error(err.message);
@@ -53,7 +61,7 @@ router.get('/', auth(['DEFAULT_USER', 'FLEET_OWNER']), async (req, res) => {
 router.get('/:id', auth(['DEFAULT_USER', 'FLEET_OWNER']), async (req, res) => {
   try {
     const fleet = await prisma.fleet.findUnique({
-      where: { id: Number(req.params.id) },  // Prisma requires the ID to be a number
+      where: { id: req.params.id },  // Prisma requires the ID to be a number
       include: { trucks: true },  // Include related trucks in the fleet
     });
     if (!fleet) return res.status(404).json({ message: 'Fleet not found' });

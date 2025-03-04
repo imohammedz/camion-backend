@@ -38,7 +38,7 @@ model Truck {
   truck_model           String
   registration_number  String   @unique
   manufacturer         String
-  year_of_manufacture  Int
+  year_of_manufacture  String
   capacity            Int
   dimensions          String?
   fuel_type           String
