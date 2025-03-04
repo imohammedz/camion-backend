@@ -13,6 +13,7 @@ module.exports = function (roles = []) {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       req.user = decoded.user;
+      console.log("Decoded user:", req.user);
 
       // If roles are specified, check if the user has the required role
       if (roles.length && !roles.includes(req.user.role)) {

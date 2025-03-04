@@ -1,6 +1,6 @@
 -- CreateTable
 CREATE TABLE "Fleet" (
-    "id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
     "fleet_name" TEXT NOT NULL,
     "fleet_base_location" TEXT,
     "operational_status" TEXT NOT NULL DEFAULT 'fully operational',
@@ -11,17 +11,17 @@ CREATE TABLE "Fleet" (
 
 -- CreateTable
 CREATE TABLE "Truck" (
-    "id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
     "truck_model" TEXT NOT NULL,
     "registration_number" TEXT NOT NULL,
     "manufacturer" TEXT NOT NULL,
-    "year_of_manufacture" INTEGER NOT NULL,
-    "capacity" INTEGER NOT NULL,
+    "year_of_manufacture" TEXT NOT NULL,
+    "capacity" TEXT NOT NULL,
     "dimensions" TEXT,
     "fuel_type" TEXT NOT NULL,
-    "mileage" INTEGER,
+    "mileage" TEXT,
     "status" TEXT NOT NULL DEFAULT 'available',
-    "fleet_id" TEXT NOT NULL,
+    "fleet_id" SERIAL NOT NULL,
 
     CONSTRAINT "Truck_pkey" PRIMARY KEY ("id")
 );
