@@ -19,16 +19,27 @@ router.post('/', auth(['FLEET_OWNER']), async (req, res) => {
   }
 });
 
-// Read all trucks
-router.get('/', auth(['FLEET_OWNER']), async (req, res) => {
+// Get trucks by fleet ID
+router.get('/:fleetId/trucks', auth(['FLEET_OWNER']), async (req, res) => {
   try {
-    const trucks = await prisma.truck.findMany({
-      include: { fleet: true }, // Populate fleet details
+    const { fleetId } = req.params;
+
+    if (!fleetId) {
+      return res.status(400).json({ error: "Fleet ID is required" });
+    }
+
+    const fleet = await prisma.fleet.findUnique({
+      where: { id: fleetId }, // Ensure fleetId is a valid string
+      include: { trucks: true },
     });
 
-    res.json(trucks);
+    if (!fleet) {
+      return res.status(404).json({ error: "Fleet not found" });
+    }
+
+    res.json(fleet.trucks);
   } catch (err) {
-    console.error('Error fetching trucks:', err);
+    console.error("Error fetching trucks:", err);
     res.status(500).json({ error: err.message });
   }
 });
