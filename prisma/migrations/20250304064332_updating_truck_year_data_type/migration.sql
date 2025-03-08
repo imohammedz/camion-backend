@@ -6,4 +6,4 @@
 */
 -- AlterTable
 ALTER TABLE "Truck" DROP COLUMN "year_of_manufacture",
-ADD COLUMN     "year_of_manufacture" INTEGER NOT NULL;
+ADD COLUMN     "year_of_manufacture" TEXT NOT NULL;

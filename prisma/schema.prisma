@@ -39,10 +39,10 @@ model Truck {
   registration_number  String   @unique
   manufacturer         String
   year_of_manufacture  String
-  capacity            Int
+  capacity            String
   dimensions          String?
   fuel_type           String
-  mileage             Int?
+  mileage             String?
   status              String   @default("available")
 
   // ✅ Foreign key relation to Fleet
