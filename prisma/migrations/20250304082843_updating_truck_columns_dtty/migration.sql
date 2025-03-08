@@ -7,6 +7,6 @@
 */
 -- AlterTable
 ALTER TABLE "Truck" DROP COLUMN "capacity",
-ADD COLUMN     "capacity" INTEGER NOT NULL,
+ADD COLUMN     "capacity" TEXT NOT NULL,
 DROP COLUMN "mileage",
-ADD COLUMN     "mileage" INTEGER;
+ADD COLUMN     "mileage" TEXT;
