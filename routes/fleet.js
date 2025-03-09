@@ -75,7 +75,7 @@ router.get('/:id', auth(['DEFAULT_USER', 'FLEET_OWNER']), async (req, res) => {
 router.put('/:id', auth(['DEFAULT_USER', 'FLEET_OWNER']), async (req, res) => {
   try {
     const fleet = await prisma.fleet.update({
-      where: { id: Number(req.params.id) },
+      where: { id: req.params.id },
       data: req.body,
     });
     res.json(fleet);
@@ -98,7 +98,7 @@ router.delete('/:id', auth(['FLEET_OWNER']), async (req, res) => {
 router.get('/:fleetId/trucks', auth(['FLEET_OWNER']), async (req, res) => {
   try {
     const fleet = await prisma.fleet.findUnique({
-      where: { id: Number(req.params.fleetId) },
+      where: { id: req.params.fleetId },
       include: { trucks: true },
     });
 
