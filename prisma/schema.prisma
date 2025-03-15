@@ -14,38 +14,188 @@ datasource db {
 }
 
 model User {
-  id          Int     @id @default(autoincrement())  
-  name        String  
-  email       String  @unique
-  phoneNumber String  @unique
-  password    String  
-  role        String  @default("DEFAULT_USER")
+  id          String @id @default(uuid())
+  name        String
+  email       String @unique
+  phoneNumber String @unique
+  password    String
+  role        String @default("DEFAULT_USER")
 }
 
 model Fleet {
-  id                 String   @id @default(uuid()) // Primary key (UUID for scalability)
-  fleet_name         String
+  id                  String   @id @default(uuid())
+  fleet_name          String
   fleet_base_location String?
-  operational_status String   @default("fully operational") // Enum replacement
-  createdAt          DateTime @default(now())
+  operational_status  OperationalStatus @default(FULLY_OPERATIONAL)
+  createdAt           DateTime @default(now())
 
   // Relation to Truck model (assuming a fleet can have multiple trucks)
   trucks             Truck[]
+  drivers            Driver[]
 }
 
 model Truck {
-  id                   String   @id @default(uuid())
-  truck_model           String
-  registration_number  String   @unique
-  manufacturer         String
-  year_of_manufacture  String
+  id                  String      @id @default(uuid())
+  truck_model         String
+  registration_number String      @unique
+  manufacturer        String
+  year_of_manufacture String
   capacity            String
   dimensions          String?
   fuel_type           String
   mileage             String?
-  status              String   @default("available")
-
-  // ✅ Foreign key relation to Fleet
+  status              TruckStatus  @default(AVAILABLE)
+  driver_id           String
   fleet_id            String
-  fleet               Fleet   @relation(fields: [fleet_id], references: [id])
+
+
+  // Foreign key relation to Fleet
+  fleet             Fleet               @relation(fields: [fleet_id], references: [id])
+  driver            Driver?             @relation(fields: [driver_id], references: [id])
+  MaintenanceRecord MaintenanceRecord[]
 }
+
+model Driver {
+  id           String       @id @default(uuid())
+  name         String
+  email        String       @unique
+  phone        String
+  license      String       @unique
+  experience   String
+  status       DriverStatus @default(AVAILABLE)
+  fleetId      String
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  // Relations
+  driverShifts DriverShift[] // Many-to-many relation with shifts
+  leaveRecords LeaveRecord[]
+  Fleet        Fleet        @relation(fields: [fleetId], references: [id])
+  Truck        Truck[]
+}
+
+// Shift model
+model Shift {
+  id        String    @id @default(uuid())
+  name      String
+  startTime DateTime 
+  endTime   DateTime 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  driverShifts DriverShift[] // Many-to-many relation with drivers
+}
+
+// Junction table for Driver and Shift (many-to-many)
+model DriverShift {
+  id               String    @id @default(uuid())
+  date             DateTime
+  isRecurring      Boolean  @default(false)
+  recurrenceType   RecurrenceType @default(DAILY)
+  customDays       DayOfWeek[]
+  customHours      String[]
+  driverId         String
+  shiftId          String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  driver           Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  shift            Shift  @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+
+  @@unique([driverId, shiftId, date]) // A driver can't have multiple shifts at the same time
+}
+
+// Maintenance record for trucks
+model MaintenanceRecord {
+  id          String            @id @default(uuid())
+  description String
+  startDate   DateTime
+  endDate     DateTime?
+  cost        Float?
+  status      MaintenanceStatus @default(SCHEDULED)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  // Relations
+  truckId     String
+  truck       Truck  @relation(fields: [truckId], references: [id], onDelete: Cascade)
+}
+
+// Leave record for drivers
+model LeaveRecord {
+  id        String       @id @default(uuid())
+  startDate DateTime
+  endDate   DateTime
+  reason    String?
+  status    LeaveStatus @default(PENDING)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  // Relations
+  driverId String
+  driver   Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
+}
+
+// Enums
+enum DriverStatus {
+  ASSIGNED
+  AVAILABLE
+  ON_LEAVE
+}
+
+enum TruckStatus {
+  AVAILABLE
+  UNDER_MAINTENANCE
+  OUT_OF_SERVICE
+  IN_TRANSIT
+  LOADING_UNLOADING
+  WAITING_FOR_ASSIGNMENT
+  IDLE
+}
+
+enum MaintenanceStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum OperationalStatus {
+    FULLY_OPERATIONAL
+    PARTIALLY_OPERATIONAL
+    UNDER_MAINTENANCE
+}
+enum RecurrenceType {
+  DAILY
+  WEEKLY
+  MONTHLY
+  CUSTOM
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+//Truck Status
+/**
+ * IN_TRANSIT – The truck is actively transporting goods to its destination.
+ * LOADING_UNLOADING – The truck is at a warehouse or delivery point, either loading or unloading cargo.
+ * UNDER_MAINTENANCE – The truck is undergoing repairs, inspections, or routine servicing and is temporarily unavailable.
+ * AVAILABLE – The truck is idle but ready for assignment.
+ * OUT_OF_SERVICE – The truck is not operational due to major issues or long-term unavailability.
+ * WAITING_FOR_ASSIGNMENT – The truck is parked and awaiting a new trip or task.
+ */
