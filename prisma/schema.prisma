@@ -94,6 +94,7 @@ model DriverShift {
   isRecurring      Boolean  @default(false)
   recurrenceType   RecurrenceType @default(DAILY)
   customDays       DayOfWeek[]
+  customHours      String[]
   driverId         String
   shiftId          String
   createdAt        DateTime @default(now())
