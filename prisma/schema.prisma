@@ -76,7 +76,7 @@ model Driver {
 
 // Shift model
 model Shift {
-  id        String   @id @default(cuid())
+  id        String    @id @default(uuid())
   name      String
   startTime DateTime 
   endTime   DateTime 
@@ -89,7 +89,7 @@ model Shift {
 
 // Junction table for Driver and Shift (many-to-many)
 model DriverShift {
-  id               String   @id @default(cuid())
+  id               String    @id @default(uuid())
   date             DateTime
   isRecurring      Boolean  @default(false)
   recurrenceType   RecurrenceType @default(DAILY)
@@ -109,7 +109,7 @@ model DriverShift {
 
 // Maintenance record for trucks
 model MaintenanceRecord {
-  id          String            @id @default(cuid())
+  id          String            @id @default(uuid())
   description String
   startDate   DateTime
   endDate     DateTime?
@@ -125,7 +125,7 @@ model MaintenanceRecord {
 
 // Leave record for drivers
 model LeaveRecord {
-  id        String      @id @default(cuid())
+  id        String       @id @default(uuid())
   startDate DateTime
   endDate   DateTime
   reason    String?
