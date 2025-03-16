@@ -8,6 +8,9 @@ const authRoutes = require('./routes/auth');  // Add auth routes
 const userRoutes = require('./routes/user'); // Add user routes
 const fleetRoutes = require('./routes/fleet');
 const truckRoutes = require('./routes/truck');
+const driverRoutes = require('./routes/driver');
+const shiftRoutes = require('./routes/shift');
+const driverShiftRoutes = require('./routes/driverShift');
 
 dotenv.config();
 const app = express();
@@ -32,6 +35,9 @@ app.use('/api/auth', authRoutes);   // Use auth routes
 app.use('/api/user', userRoutes);  // Use user routes (protected)
 app.use('/api/fleets', fleetRoutes);
 app.use('/api/trucks', truckRoutes);
+app.use('/api/drivers', driverRoutes);
+app.use('/api/shifts', shiftRoutes);
+app.use('/api/driverShifts', driverShiftRoutes);
 
 app.use(express.json()); // Ensure request body is parsed
 
