@@ -201,3 +201,37 @@ enum LeaveStatus {
  * OUT_OF_SERVICE – The truck is not operational due to major issues or long-term unavailability.
  * WAITING_FOR_ASSIGNMENT – The truck is parked and awaiting a new trip or task.
  */
+
+ model Shipment {
+  id                String   @id @default(uuid())
+  ownerId           String   // Reference to User (shipment owner)
+
+  // Customer Details
+  customerName      String
+  contactInfo       String
+  billingAddress    String
+  shippingAddress   String
+
+  // Shipment Details
+  pickupLocation    String
+  destination       String
+  shipmentDate      DateTime
+  deliveryDate      DateTime
+
+  // Package Details
+  packageType       String
+  quantity          Int
+  dimensions        String
+  weight            Float
+
+  // Service Details
+  serviceType       String
+  insurance         Boolean
+
+  // Order Details
+  orderId           String   @unique
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+

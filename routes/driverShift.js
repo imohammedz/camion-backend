@@ -32,3 +32,4 @@ router.put('/:id',auth(['FLEET_OWNER']), async (req, res) => {
     }
 });
 
+module.exports = router;
