@@ -45,13 +45,13 @@ model Truck {
   fuel_type           String
   mileage             String?
   status              TruckStatus  @default(AVAILABLE)
-  driver_id           String
+  driver_id           String?
   fleet_id            String
 
 
   // Foreign key relation to Fleet
   fleet             Fleet               @relation(fields: [fleet_id], references: [id])
-  driver            Driver?             @relation(fields: [driver_id], references: [id])
+  driver            Driver?            @relation(fields: [driver_id], references: [id])
   MaintenanceRecord MaintenanceRecord[]
 }
 
