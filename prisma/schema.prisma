@@ -63,14 +63,14 @@ model Driver {
   license      String       @unique
   experience   String
   status       DriverStatus @default(AVAILABLE)
-  fleetId      String
+  fleetId      String?
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
 
   // Relations
   driverShifts DriverShift[] // Many-to-many relation with shifts
   leaveRecords LeaveRecord[]
-  Fleet        Fleet        @relation(fields: [fleetId], references: [id])
+  Fleet        Fleet?        @relation(fields: [fleetId], references: [id])
   Truck        Truck[]
 }
 
