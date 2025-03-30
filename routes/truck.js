@@ -4,7 +4,6 @@ const { PrismaClient } = require('@prisma/client');
 const auth = require('../middleware/auth');
 
 const prisma = new PrismaClient();
-
 // Create a truck
 router.post('/', auth(['FLEET_OWNER']), async (req, res) => {
   try {
@@ -63,9 +62,23 @@ router.get('/:id', auth(['FLEET_OWNER']), async (req, res) => {
 // Update a truck
 router.put('/:id', auth(['FLEET_OWNER']), async (req, res) => {
   try {
+    const { driver_id, fleet_id, ...truckData } = req.body; // Extract fleet_id
+
+    const updateData = { ...truckData };
+
+    // Handle driver update
+    if (driver_id !== undefined) {
+      updateData.driver = driver_id ? { connect: { id: driver_id } } : { disconnect: true };
+    }
+
+    // Handle fleet update
+    if (fleet_id) {
+      updateData.fleet = { connect: { id: fleet_id } };
+    }
+
     const truck = await prisma.truck.update({
       where: { id: req.params.id },
-      data: req.body,
+      data: updateData,
     });
 
     res.json(truck);
@@ -74,6 +87,8 @@ router.put('/:id', auth(['FLEET_OWNER']), async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+
 
 // Delete a truck
 router.delete('/:id', auth(['FLEET_OWNER']), async (req, res) => {
