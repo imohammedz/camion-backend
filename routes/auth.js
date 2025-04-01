@@ -51,7 +51,7 @@ router.post('/register', [
     const payload = { user: { id: user.id, role: user.role } };
     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-    res.json({ token });
+    res.json({ token, role: user.role });  // Send token + role to frontend
 
   } catch (err) {
     console.error(err.message);
