@@ -23,7 +23,7 @@ router.post('/register', [
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { name, email, phoneNumber, password } = req.body;
+  const { name, email, phoneNumber, password, role } = req.body;
 
   try {
     let user = await prisma.user.findFirst({
@@ -44,7 +44,7 @@ router.post('/register', [
         email,
         phoneNumber,
         password: hashedPassword,
-        role: 'DEFAULT_USER' // Automatically assign role
+        role,
       }
     });
 
@@ -93,7 +93,7 @@ router.post('/login', [
     const payload = { user: { id: user.id, role: user.role } };
     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-    res.json({ token });
+    res.json({ token, role: user.role });
 
   } catch (err) {
     console.error(err.message);
