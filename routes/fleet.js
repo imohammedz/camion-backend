@@ -118,4 +118,24 @@ router.get('/:fleetId/trucks', auth(['FLEET_OWNER']), async (req, res) => {
   }
 });
 
+// Get drivers by fleet ID
+router.get('/:fleetId/drivers', auth(["FLEET_OWNER"]), async (req, res) => {
+  try {
+    const { fleetId } = req.params;
+
+    if (!fleetId) {
+      return res.status(400).json({ error: "Fleet ID is required" });
+    }
+
+    const drivers = await prisma.driver.findMany({
+      where: { fleetId: req.params.fleetId },
+    });
+
+    res.json(drivers);
+  } catch (err) {
+    console.error("Error fetching drivers:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

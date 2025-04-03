@@ -23,15 +23,15 @@ model User {
 }
 
 model Fleet {
-  id                  String   @id @default(uuid())
+  id                  String            @id @default(uuid())
   fleet_name          String
   fleet_base_location String?
   operational_status  OperationalStatus @default(FULLY_OPERATIONAL)
-  createdAt           DateTime @default(now())
+  createdAt           DateTime          @default(now())
 
   // Relation to Truck model (assuming a fleet can have multiple trucks)
-  trucks             Truck[]
-  drivers            Driver[]
+  trucks  Truck[]
+  drivers Driver[]
 }
 
 model Truck {
@@ -44,28 +44,29 @@ model Truck {
   dimensions          String?
   fuel_type           String
   mileage             String?
-  status              TruckStatus  @default(AVAILABLE)
+  status              TruckStatus @default(AVAILABLE)
   driver_id           String?
   fleet_id            String
 
-
   // Foreign key relation to Fleet
   fleet             Fleet               @relation(fields: [fleet_id], references: [id])
-  driver            Driver?            @relation(fields: [driver_id], references: [id])
+  driver            Driver?             @relation(fields: [driver_id], references: [id])
   MaintenanceRecord MaintenanceRecord[]
 }
 
 model Driver {
-  id           String       @id @default(uuid())
-  name         String
-  email        String       @unique
-  phone        String
-  license      String       @unique
-  experience   String
-  status       DriverStatus @default(AVAILABLE)
-  fleetId      String?
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  id                String       @id @default(uuid())
+  name              String
+  email             String       @unique
+  registerId        String       @unique
+  phone             String
+  license           String       @unique
+  experience        String
+  status            DriverStatus @default(AVAILABLE)
+  truckRegisteredId String?
+  fleetId           String?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
 
   // Relations
   driverShifts DriverShift[] // Many-to-many relation with shifts
@@ -76,10 +77,10 @@ model Driver {
 
 // Shift model
 model Shift {
-  id        String    @id @default(uuid())
+  id        String   @id @default(uuid())
   name      String
-  startTime DateTime 
-  endTime   DateTime 
+  startTime DateTime
+  endTime   DateTime
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -89,20 +90,20 @@ model Shift {
 
 // Junction table for Driver and Shift (many-to-many)
 model DriverShift {
-  id               String    @id @default(uuid())
-  date             DateTime
-  isRecurring      Boolean  @default(false)
-  recurrenceType   RecurrenceType @default(DAILY)
-  customDays       DayOfWeek[]
-  customHours      String[]
-  driverId         String
-  shiftId          String
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id             String         @id @default(uuid())
+  date           DateTime
+  isRecurring    Boolean        @default(false)
+  recurrenceType RecurrenceType @default(DAILY)
+  customDays     DayOfWeek[]
+  customHours    String[]
+  driverId       String
+  shiftId        String
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
 
   // Relations
-  driver           Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
-  shift            Shift  @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  driver Driver @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  shift  Shift  @relation(fields: [shiftId], references: [id], onDelete: Cascade)
 
   @@unique([driverId, shiftId, date]) // A driver can't have multiple shifts at the same time
 }
@@ -119,13 +120,13 @@ model MaintenanceRecord {
   updatedAt   DateTime          @updatedAt
 
   // Relations
-  truckId     String
-  truck       Truck  @relation(fields: [truckId], references: [id], onDelete: Cascade)
+  truckId String
+  truck   Truck  @relation(fields: [truckId], references: [id], onDelete: Cascade)
 }
 
 // Leave record for drivers
 model LeaveRecord {
-  id        String       @id @default(uuid())
+  id        String      @id @default(uuid())
   startDate DateTime
   endDate   DateTime
   reason    String?
@@ -165,10 +166,11 @@ enum MaintenanceStatus {
 }
 
 enum OperationalStatus {
-    FULLY_OPERATIONAL
-    PARTIALLY_OPERATIONAL
-    UNDER_MAINTENANCE
+  FULLY_OPERATIONAL
+  PARTIALLY_OPERATIONAL
+  UNDER_MAINTENANCE
 }
+
 enum RecurrenceType {
   DAILY
   WEEKLY
@@ -185,6 +187,7 @@ enum DayOfWeek {
   SATURDAY
   SUNDAY
 }
+
 enum LeaveStatus {
   PENDING
   APPROVED
@@ -202,36 +205,35 @@ enum LeaveStatus {
  * WAITING_FOR_ASSIGNMENT – The truck is parked and awaiting a new trip or task.
  */
 
- model Shipment {
-  id                String   @id @default(uuid())
-  ownerId           String   // Reference to User (shipment owner)
+model Shipment {
+  id      String @id @default(uuid())
+  ownerId String // Reference to User (shipment owner)
 
   // Customer Details
-  customerName      String
-  contactInfo       String
-  billingAddress    String
-  shippingAddress   String
+  customerName    String
+  contactInfo     String
+  billingAddress  String
+  shippingAddress String
 
   // Shipment Details
-  pickupLocation    String
-  destination       String
-  shipmentDate      DateTime
-  deliveryDate      DateTime
+  pickupLocation String
+  destination    String
+  shipmentDate   DateTime
+  deliveryDate   DateTime
 
   // Package Details
-  packageType       String
-  quantity          Int
-  dimensions        String
-  weight            Float
+  packageType String
+  quantity    Int
+  dimensions  String
+  weight      Float
 
   // Service Details
-  serviceType       String
-  insurance         Boolean
+  serviceType String
+  insurance   Boolean
 
   // Order Details
-  orderId           String   @unique
+  orderId String @unique
 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
-
