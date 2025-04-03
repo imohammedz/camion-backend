@@ -235,3 +235,15 @@ enum LeaveStatus {
   updatedAt         DateTime @updatedAt
 }
 
+model ShipmentProfile {
+  id          String  @id @default(uuid())
+    ownerId     String  @unique
+  name        String
+  phoneNumber String
+  baseLocation String
+  role        String  // Individual, Company, Broker, Transporter, etc.
+  companyName String
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

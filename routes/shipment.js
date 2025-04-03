@@ -142,4 +142,59 @@ router.delete('/:id', auth(['FLEET_OWNER', 'SHIPMENT_OWNER']), async (req, res) 
   }
 });
 
+// ✅ Create or Update Profile
+router.post('/profile', auth(['SHIPMENT_OWNER']), async (req, res) => {
+  try {
+    const { name, phoneNumber, baseLocation, role, companyName } = req.body;
+
+    const existingProfile = await prisma.shipmentProfile.findUnique({
+      where: { ownerId: req.user.id },
+    });
+
+    let profile;
+    if (existingProfile) {
+      profile = await prisma.shipmentProfile.update({
+        where: { ownerId: req.user.id },
+        data: { name, phoneNumber, baseLocation, role, companyName },
+      });
+    } else {
+      profile = await prisma.shipmentProfile.create({
+        data: {
+          ownerId: req.user.id,
+          name,
+          phoneNumber,
+          baseLocation,
+          role,
+          companyName,
+          createdBy: req.user.id, // ✅ Assign creator
+        },
+      });
+    }
+
+    res.status(200).json(profile);
+  } catch (err) {
+    console.error('Error saving profile:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ✅ Get Profile by CreatedBy
+router.get('/profiles/:createdBy', auth(['SHIPMENT_OWNER', 'FLEET_OWNER']), async (req, res) => {
+  try {
+    const { createdBy } = req.params;
+
+    const profiles = await prisma.shipmentProfile.findMany({
+      where: { createdBy },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (!profiles.length) return res.status(404).json({ message: 'No profiles found' });
+
+    res.json(profiles);
+  } catch (err) {
+    console.error('Error fetching profiles:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
